@@ -26,4 +26,5 @@ namespace grammar_parser {
 
     parse_state parse(const char * src);
     void print_grammar(FILE * file, const parse_state & state);
+    // void print_rule_pointer(FILE * file, const llama_grammar_element* rule);
 }

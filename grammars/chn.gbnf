@@ -1,0 +1,35 @@
+root ::= item
+
+item ::=  "a" *
+a ::= "a"
+b ::= "b"
+
+# Excludes various line break characters
+# item ::= "- " " " | "+" " "
+# item ::= "- " ([^\r\n\x0b\x0c\x85\u2028\u2029] "1")+ "\n"
+# item ::= [\u4e00-\u9fa5]
+# item ::= item "a"  | "a"
+# item ::= "a" item1 | "a"
+# item1 ::= "a" item1 | "a"
+# item ::= [\u4e00-\u9fa5]+
+# item ::= "(" item ")" | "" | "a" item
+# item ::= "(" item ")" | ""
+
+# item ::= "(" item ")" item-tail | item-tail
+# item-tail ::= "a" item-tail | ""
+
+# a ::= "(" a* ")" | ""
+
+
+
+# root   ::= array+
+# array  ::= "[" (array)* "]"
+
+
+# root ::= "[" array-4 "]" root-2 | "[" array-4 "]"
+# root-2 ::= "[" array-4 "]" root-2 | "[" array-4 "]"
+# array ::= "[" array-4 "]"
+# array-4 ::= "[" array-4 "]" array-4 | ""
+
+
+# root ::= "a" root "a" | "" | "a"

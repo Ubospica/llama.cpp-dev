@@ -5,6 +5,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include <iostream>
+
 static const std::vector<std::pair<uint32_t, uint32_t>> digit_ranges = {
 {0x30, 0x39}, {0xB2, 0xB3}, {0xB9, 0xB9}, {0x660, 0x669}, {0x6F0, 0x6F9}, {0x7C0, 0x7C9}, {0x966, 0x96F}, {0x9E6, 0x9EF}, {0xA66, 0xA6F}, {0xAE6, 0xAEF}, {0xB66, 0xB6F}, {0xBE6, 0xBEF}, {0xC66, 0xC6F},
 {0xCE6, 0xCEF}, {0xD66, 0xD6F}, {0xDE6, 0xDEF}, {0xE50, 0xE59}, {0xED0, 0xED9}, {0xF20, 0xF29}, {0x1040, 0x1049}, {0x1090, 0x1099}, {0x1369, 0x1371}, {0x17E0, 0x17E9}, {0x1810, 0x1819}, {0x1946, 0x194F},
@@ -430,7 +432,6 @@ static std::string bytes_to_unicode_bpe(uint8_t byte) {
     static std::unordered_map<uint8_t, std::string> map = bytes_to_unicode_map_bpe();
     return map.at(byte);
 }
-
 static std::unordered_map<std::string, uint8_t> unicode_to_bytes_map_bpe() {
     std::unordered_map<std::string, uint8_t> map;
     for (int ch = u'!'; ch <= u'~'; ++ch) {
@@ -452,6 +453,11 @@ static std::unordered_map<std::string, uint8_t> unicode_to_bytes_map_bpe() {
             ++n;
         }
     }
+    // print map to stdout
+    std::cout << "decode map:\n" ;
+    for (auto p : map) {
+        std::cout << p.first << " " << (int)p.second << std::endl;
+    }
     return map;
 }
 
@@ -459,4 +465,3 @@ static uint8_t unicode_to_bytes_bpe(const std::string & utf8) {
     static std::unordered_map<std::string, uint8_t> map = unicode_to_bytes_map_bpe();
     return map.at(utf8);
 }
-

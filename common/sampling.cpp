@@ -16,6 +16,10 @@ struct llama_sampling_context * llama_sampling_init(const struct llama_sampling_
             return nullptr;
         }
 
+        fprintf(stderr, "%s: grammar:\n", __func__);
+        grammar_parser::print_grammar(stderr, result->parsed_grammar);
+        fprintf(stderr, "\n");
+
         std::vector<const llama_grammar_element *> grammar_rules(result->parsed_grammar.c_rules());
 
         result->grammar = llama_grammar_init(

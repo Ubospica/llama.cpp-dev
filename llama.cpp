@@ -4,8 +4,15 @@
 #include "unicode.h"
 
 #include "ggml.h"
-
+#include "common/grammar-parser.h"
 #include "ggml-alloc.h"
+
+
+#include <vector>
+#include <map>
+#include <cstdint>
+#include <string>
+
 
 #ifdef GGML_USE_CUBLAS
 #  include "ggml-cuda.h"
@@ -7031,6 +7038,49 @@ static std::vector<std::vector<const llama_grammar_element *>> llama_grammar_acc
     return new_stacks;
 }
 
+void print_grammar_char(FILE * file, uint32_t c) {
+    if (0x20 <= c && c <= 0x7f) {
+        fprintf(file, "%c", static_cast<char>(c));
+    } else {
+        // cop out of encoding UTF-8
+        fprintf(file, "<U+%04X>", c);
+    }
+}
+
+void print_rule_pointer(FILE * file, const llama_grammar_element* rule) {
+    for (;; rule += 1) {
+        auto elem = *rule;
+        switch (elem.type) {
+            case LLAMA_GRETYPE_END:            fprintf(file, "END");            break;
+            case LLAMA_GRETYPE_ALT:            fprintf(file, "ALT");            break;
+            case LLAMA_GRETYPE_RULE_REF:       fprintf(file, "RULE_REF");       break;
+            case LLAMA_GRETYPE_CHAR:           fprintf(file, "CHAR");           break;
+            case LLAMA_GRETYPE_CHAR_NOT:       fprintf(file, "CHAR_NOT");       break;
+            case LLAMA_GRETYPE_CHAR_RNG_UPPER: fprintf(file, "CHAR_RNG_UPPER"); break;
+            case LLAMA_GRETYPE_CHAR_ALT:       fprintf(file, "CHAR_ALT");       break;
+        }
+        switch (elem.type) {
+            case LLAMA_GRETYPE_END:
+            case LLAMA_GRETYPE_ALT:
+            case LLAMA_GRETYPE_RULE_REF:
+                fprintf(file, "(%u) ", elem.value);
+                break;
+            case LLAMA_GRETYPE_CHAR:
+            case LLAMA_GRETYPE_CHAR_NOT:
+            case LLAMA_GRETYPE_CHAR_RNG_UPPER:
+            case LLAMA_GRETYPE_CHAR_ALT:
+                fprintf(file, "(\"");
+                print_grammar_char(file, elem.value);
+                fprintf(file, "\") ");
+                break;
+        }
+        if (elem.type == LLAMA_GRETYPE_END) {
+            break;
+        }
+    }
+    fprintf(file, "\n");
+}
+
 static std::vector<llama_grammar_candidate> llama_grammar_reject_candidates(
         const std::vector<std::vector<llama_grammar_element>>         & rules,
         const std::vector<std::vector<const llama_grammar_element *>> & stacks,
@@ -7071,6 +7121,11 @@ static std::vector<llama_grammar_candidate> llama_grammar_reject_candidates_for_
     }
 
     const auto * stack_pos_after = llama_grammar_match_char(stack_pos, 0).second;
+
+    // fprintf(stderr, "char = 0, before advance: ");
+    // print_rule_pointer(stderr, stack_pos);
+    // fprintf(stderr, "after advance: ");
+    // print_rule_pointer(stderr, stack_pos_after);
 
     // update top of stack to next element, if any
     std::vector<const llama_grammar_element *> stack_after(stack.begin(), stack.end() - 1);
@@ -7723,6 +7778,7 @@ void llama_grammar_accept_token(struct llama_context * ctx, struct llama_grammar
     for (auto it = code_points.begin(), end = code_points.end() - 1; it != end; ++it) {
         grammar->stacks = llama_grammar_accept(grammar->rules, grammar->stacks, *it);
     }
+    // std::cout << "<" << grammar->stacks.size() << ">";
     grammar->partial_utf8 = decoded.second;
     GGML_ASSERT(!grammar->stacks.empty());
 

@@ -1,0 +1,89 @@
+algorithm(Recursive descent parser + backtracking)
+init:
+    stacks = [stack]
+    stack: [(grammar, position)]
+    grammars = [grammar]
+    grammar:
+        containing: or, reference of other grammar, codepoint, sequence of codepoint and other grammar
+        starts with a set of codepoints
+    set of codepoint: e.g. [a-zA-Z0-9], [^a-z]
+
+while true:
+    # step 1. find all possible next token
+    impossible_token = all_tokens()
+    for stack in stacks:
+        # find possible next token for this stack, and remove from impossible_token
+        new_impossible_token = []
+        for token in impossible_token:
+            str = id_to_token(token)
+            if str[0] not in stack[-1][0]:
+                new_impossible_token.add(token)
+            else:
+                new_stacks = stack.accept(str[0])
+                recursively find str[1:] fits for new_stacks
+                if not fit:
+                    new_impossible_token.add(token)
+        impossible_token = new_impossible_token
+
+    # step 2. sample
+    # sample with llm
+    new_token = sample_from(all_tokens() \ impossible_token)
+    tokens.add(new_token)
+    str = id_to_token(new_token)
+
+    if new_token == end_token or meet_end_sequence(tokens):
+        assert(end_token is possible for stacks)
+        break
+
+    # step 3. update stacks
+    new_stacks_global = []
+    for stack in stacks:
+        if str[0] not in stack[-1][0]:
+            continue
+        new_stacks = stack.accept(str[0])
+        recursively find str[1:] fits for new_stacks, and update new_stacks
+        if not fit:
+            continue
+        new_stacks_global.add_all(new_stacks)
+
+algorithm(endstring checking)
+init:
+    endstring_dfa = build_dfa(endstring)
+    match_len = 0
+
+OUT: while true:
+    token = generate_token()
+    accepted, ended = endstring_dfa.accept(token)
+    if ended:
+        break
+    if accepted:
+        match_len += 1
+    else:
+        INNER: while match_len > 0:
+            endstring_dfa.reset()
+            accepted, ended = endstring_dfa.accept(tokens[-match_len:])
+            if ended:
+                break OUT
+            else if accepted:
+                break
+            else:
+                match_len -= 1
+
+
+algorithm(build_dfa)
+    # 1. build nfa
+    nfa = NFA()
+    for i in len(endstring):
+        for token in all_tokens():
+            str = token_to_str(token)
+            if str == endstring[i:i+len(str)]
+                nfa.add_edge(i, i+len(str), token)
+    for token in all_tokens():
+        str = token_to_str(token)
+        for i in range(len(str)):
+            if token[i:] == endstring[:len(token)-i]:
+                nfa.add_edge(0, len(token)-i, token)
+            if token[:i] == endstring[len(endstring)-i:]:
+                nfa.add_edge(len(endstring)-i, len(endstring), token)
+    # 2. nfa to dfa
+    return nfa_to_dfa(nfa)

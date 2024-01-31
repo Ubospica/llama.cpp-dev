@@ -334,6 +334,40 @@ namespace grammar_parser {
         fprintf(file, "\n");
     }
 
+    // void print_rule_pointer(FILE * file, const llama_grammar_element* rule) {
+    //     for (;; rule += 1) {
+    //         auto elem = *rule;
+    //         switch (elem.type) {
+    //             case LLAMA_GRETYPE_END:            fprintf(file, "END");            break;
+    //             case LLAMA_GRETYPE_ALT:            fprintf(file, "ALT");            break;
+    //             case LLAMA_GRETYPE_RULE_REF:       fprintf(file, "RULE_REF");       break;
+    //             case LLAMA_GRETYPE_CHAR:           fprintf(file, "CHAR");           break;
+    //             case LLAMA_GRETYPE_CHAR_NOT:       fprintf(file, "CHAR_NOT");       break;
+    //             case LLAMA_GRETYPE_CHAR_RNG_UPPER: fprintf(file, "CHAR_RNG_UPPER"); break;
+    //             case LLAMA_GRETYPE_CHAR_ALT:       fprintf(file, "CHAR_ALT");       break;
+    //         }
+    //         switch (elem.type) {
+    //             case LLAMA_GRETYPE_END:
+    //             case LLAMA_GRETYPE_ALT:
+    //             case LLAMA_GRETYPE_RULE_REF:
+    //                 fprintf(file, "(%u) ", elem.value);
+    //                 break;
+    //             case LLAMA_GRETYPE_CHAR:
+    //             case LLAMA_GRETYPE_CHAR_NOT:
+    //             case LLAMA_GRETYPE_CHAR_RNG_UPPER:
+    //             case LLAMA_GRETYPE_CHAR_ALT:
+    //                 fprintf(file, "(\"");
+    //                 print_grammar_char(file, elem.value);
+    //                 fprintf(file, "\") ");
+    //                 break;
+    //         }
+    //         if (elem.type == LLAMA_GRETYPE_END) {
+    //             break;
+    //         }
+    //     }
+    //     fprintf(file, "\n");
+    // }
+
     static void print_rule(
             FILE     * file,
             uint32_t   rule_id,
@@ -343,6 +377,11 @@ namespace grammar_parser {
             throw std::runtime_error(
                 "malformed rule, does not end with LLAMA_GRETYPE_END: " + std::to_string(rule_id));
         }
+        fprintf(file, "raw rule: %d ::= ", rule_id);
+        for (size_t i = 0; i < rule.size(); ++i) {
+            fprintf(file, "(%d, %d) ", rule[i].type, rule[i].value);
+        }
+        fprintf(file, "\n");
         fprintf(file, "%s ::= ", symbol_id_names.at(rule_id).c_str());
         for (size_t i = 0, end = rule.size() - 1; i < end; i++) {
             llama_grammar_element elem = rule[i];

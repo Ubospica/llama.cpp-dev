@@ -1,0 +1,10 @@
+root   ::= object
+value  ::= object | array | string | number
+
+object ::= "{" (string ":" value ("," string ":" value)* )? "}"
+
+array  ::= "[" ( value ("," value)*)? "]"
+
+string ::= ...
+
+number ::= ...
